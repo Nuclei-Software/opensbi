@@ -83,3 +83,7 @@ endif
 ifeq ($(CFG_WITH_VFP), y)
 firmware-genflags-y += -DCFG_WITH_VFP
 endif
+
+ifneq ($(ENABLE_TEE_WG), )
+firmware-genflags-y += -DENABLE_TEE_WG
+endif

@@ -13,6 +13,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_trap.h>
+#include "../lib/sbi/optee/sm.h"
 
 #define BOOT_STATUS_RELOCATE_DONE	1
 #define BOOT_STATUS_BOOT_HART_DONE	2
@@ -300,7 +301,6 @@ _scratch_init:
 	sub	tp, tp, a5
 	li	a5, SBI_SCRATCH_SIZE
 	sub	tp, tp, a5
-
 	/* Initialize scratch space */
 	/* Store fw_start and fw_size in scratch space */
 	lla	a4, _fw_start

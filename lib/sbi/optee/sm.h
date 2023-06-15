@@ -5,6 +5,7 @@
 #ifndef _SM_H_
 #define _SM_H_
 
+#ifndef __ASSEMBLER__
 #include <stdint.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_trap.h>
@@ -91,5 +92,20 @@ int shm_pmp_set(uint8_t perm);
 int plicm_pmp_set(uint8_t perm);
 int timerm_pmp_set(uint8_t perm);
 int mailboxm_pmp_set(uint8_t perm);
+#endif /*#ifndef __ASSEMBLER__*/
+
+#define CSR_MLWID           0x390
+#define CSR_MATTRI0_BASE    0x7F3
+#define CSR_MATTRI0_MASK    0x7F4
+#define CSR_MATTRI1_BASE    0x7F5
+#define CSR_MATTRI1_MASK    0x7F6
+#define CSR_MATTRI2_BASE    0x7F9
+#define CSR_MATTRI2_MASK    0x7FA
+#define CSR_MATTRI3_BASE    0x7FB
+#define CSR_MATTRI3_MASK    0x7FC
+
+#define SECSHARE_REGION_VALID    (1 << 0)
+#define SECSHARE_ACCESS          (1 << 3)
+#define SECSHARE_REGION_ATTR     (SECSHARE_REGION_VALID | SECSHARE_ACCESS)
 
 #endif

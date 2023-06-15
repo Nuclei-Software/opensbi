@@ -138,10 +138,14 @@ void sm_init(bool cold_boot)
 {
 	// initialize SMM
 	if (cold_boot) {
+#ifdef ENABLE_TEE_WG
+		sbi_printf("[SM](WG) Initializing ... hart [%lx]\n",
+			   csr_read(mhartid));
+#else
 		/* only the cold-booting hart will execute these */
 		sbi_printf("[SM] Initializing ... hart [%lx]\n",
 			   csr_read(mhartid));
-
+#endif
 		sbi_ecall_register_extension(&ecall_optee);
 
 		sm_region_id = smm_init();

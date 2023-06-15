@@ -271,12 +271,10 @@ void sbi_trap_handler_sec(struct sbi_trap_regs *regs)
 		mcause &= ~(1UL << (__riscv_xlen - 1));
 		switch (mcause) {
 		case IRQ_M_TIMER:
-			forward_int_to_ree(regs, IRQ_M_TIMER);
 			break;
 		case IRQ_M_SOFT:
 			break;
 		case IRQ_M_EXT:
-			forward_int_to_ree(regs, IRQ_M_EXT);
 			break;
 		default:
 			msg = "unknown interrupt";
