@@ -817,10 +817,18 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 			csr_write(CSR_UIE, 0);
 		}
 	}
-
 	/* Check whether SMP present via mcfg_info and L2 enabled if yes, flush L2 cache */
 	val = csr_read(0xFC2);
-	if ((val & 0x10800) == 0x10800) { // IREGION and SMP Present
+    if ((val & 0x80000) == 0x80000) { // support Smwg Extension
+        sbi_printf("Smwg supports!");
+        if (csr_read(0x390)) {
+            sbi_printf("set to secure in non-machine mode, mlwid: %lx\n", csr_read(0x390));
+        }
+        else {
+            sbi_printf("set to non-secure in non-machine mode, mlwid: %lx\n", csr_read(0x390));
+        }
+    }
+	else if ((val & 0x10800) == 0x10800) { // IREGION and SMP Present
 		val = ((csr_read(0x7F7) >> 10) << 10); // read csr mirgb_info and get iregion base address
 		val = val + 0x40000; // get smp cluster cache base address
 		/* Flush L1 Cache */
