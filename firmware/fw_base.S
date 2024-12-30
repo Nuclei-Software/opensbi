@@ -458,6 +458,7 @@ _start_warm:
 	/* Find HART id */
 	csrr	s6, CSR_MHARTID
 
+	andi	s6, s6, 0xff
 	/* Find HART index */
 	beqz	s9, 3f
 	li	a4, 0

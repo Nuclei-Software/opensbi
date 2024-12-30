@@ -163,7 +163,7 @@ void csr_write_num(int csr_num, unsigned long val);
 	} while (0)
 
 /* Get current HART id */
-#define current_hartid()	((unsigned int)csr_read(CSR_MHARTID))
+#define current_hartid()	((unsigned int)csr_read(CSR_MHARTID) & 0xff)
 
 /* determine CPU extension, return non-zero support */
 int misa_extension_imp(char ext);
