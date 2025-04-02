@@ -22,6 +22,7 @@
 #define SBI_EXT_0_1_REMOTE_SFENCE_VMA		0x6
 #define SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID	0x7
 #define SBI_EXT_0_1_SHUTDOWN			0x8
+#define SBI_EXT_0_1_CURRENT_HART		0x9
 #define SBI_EXT_BASE				0x10
 #define SBI_EXT_TIME				0x54494D45
 #define SBI_EXT_IPI				0x735049
@@ -32,6 +33,7 @@
 #define SBI_EXT_DBCN				0x4442434E
 #define SBI_EXT_SUSP				0x53555350
 #define SBI_EXT_CPPC				0x43505043
+#define SBI_EXT_OPTEE				0x4F505445
 
 /* SBI function IDs for BASE extension*/
 #define SBI_EXT_BASE_GET_SPEC_VERSION		0x0
@@ -41,6 +43,7 @@
 #define SBI_EXT_BASE_GET_MVENDORID		0x4
 #define SBI_EXT_BASE_GET_MARCHID		0x5
 #define SBI_EXT_BASE_GET_MIMPID			0x6
+#define SBI_EXT_BASE_REG_SECURE_INTR    0x7
 
 /* SBI function IDs for TIME extension*/
 #define SBI_EXT_TIME_SET_TIMER			0x0

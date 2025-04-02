@@ -184,6 +184,14 @@ fail_free_data:
 	return rc;
 }
 
+void* irqchip_plic_get_pd(void)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	struct plic_data *plic = plic_get_hart_data_ptr(scratch);
+
+	return plic;
+}
+
 #define THEAD_PLIC_CTRL_REG 0x1ffffc
 
 static void thead_plic_plat_init(struct plic_data *pd)
