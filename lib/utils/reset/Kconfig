@@ -37,6 +37,10 @@ config FDT_RESET_THEAD
 	bool "T-HEAD FDT reset driver"
 	default n
 
+config FDT_RESET_NUCLEI
+	bool "NUCLEI FDT reset driver"
+	default n
+
 endif
 
 endmenu
