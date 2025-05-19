@@ -31,7 +31,7 @@ static int sbi_ecall_base_probe(unsigned long extid, unsigned long *out_val)
 	*out_val = 1;
 	return 0;
 }
-
+extern int plic_register_sec_interrupt(unsigned int intr);
 static int sbi_ecall_base_handler(unsigned long extid, unsigned long funcid,
 				  const struct sbi_trap_regs *regs,
 				  unsigned long *out_val,
@@ -64,6 +64,9 @@ static int sbi_ecall_base_handler(unsigned long extid, unsigned long funcid,
 		break;
 	case SBI_EXT_BASE_PROBE_EXT:
 		ret = sbi_ecall_base_probe(regs->a0, out_val);
+		break;
+	case SBI_EXT_BASE_REG_SECURE_INTR:
+		*out_val = plic_register_sec_interrupt(regs->a0);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;
