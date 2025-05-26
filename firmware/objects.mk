@@ -80,6 +80,6 @@ ifdef FW_OPTEE_SHMEM_SIZE
 firmware-genflags-y += -DFW_OPTEE_SHMEM_SIZE=$(FW_OPTEE_SHMEM_SIZE)
 endif
 
-ifdef CFG_WITH_VFP
+ifneq (,$(findstring f,$(PLATFORM_RISCV_ISA)))
 firmware-genflags-y += -DCFG_WITH_VFP
 endif
