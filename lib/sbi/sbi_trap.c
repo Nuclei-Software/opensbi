@@ -197,7 +197,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 
 	return 0;
 }
-
+extern void forward_int_to_tee(struct sbi_trap_regs *regs);
 static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 {
 	mcause &= ~(1UL << (__riscv_xlen - 1));
@@ -209,7 +209,8 @@ static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 		sbi_ipi_process();
 		break;
 	case IRQ_M_EXT:
-		return sbi_irqchip_process(regs);
+		forward_int_to_tee(regs);
+		break;
 	default:
 		return SBI_ENOENT;
 	}

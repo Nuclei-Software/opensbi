@@ -28,7 +28,7 @@ static int plic_is_sec_interrupt(unsigned int intr)
 	int i;
 
 	for(i = 0; i < plic_secure_int[0]; i++)
-		if (intr == (plic_secure_int[i+1] & 0xFFFF))
+		if ((intr == (plic_secure_int[i+1] & 0xFFFF)) && (current_hartid() == (plic_secure_int[i+1] >> 16)))
 			return true;
 	return false;
 }
@@ -80,6 +80,37 @@ int plic_register_sec_interrupt(unsigned int intr)
 	return true;
 }
 
+static int __plic_intr_enabled(unsigned int intr, int mode)
+{
+	unsigned int hartid = current_hartid();
+	unsigned int offset;
+	unsigned int val;
+	struct plic_data *plic = irqchip_plic_get_pd();
+
+	if (mode == MODE_M) {
+		/* Check M-Mode interrupt enable */
+		offset = 0x2000 + 0x80 * 2 * hartid +
+				4 * (intr >> 5);
+		val = (*(volatile unsigned int *)(plic->addr + offset));
+		if (val & (1 << (intr & 0x1F)))
+			return 1; /* already enabled */
+	} else if (mode == MODE_S){
+		/* Check S-Mode interrupt enable */
+		offset = 0x2000 + 0x80 +
+				0x80 * 2 * hartid + 4 * (intr >> 5);
+		val = (*(volatile unsigned int *)(plic->addr + offset));
+		if (val & (1 << (intr & 0x1F)))
+			return 1; /* already enabled */
+	}
+
+	return 0;
+}
+
+static int plic_intr_enabled(unsigned int intr)
+{
+	return __plic_intr_enabled(intr, MODE_M) |
+		__plic_intr_enabled(intr, MODE_S);
+}
 /*
  * mode:0:M-Mode, 1:S-Mode
  */
@@ -130,22 +161,26 @@ void plic_intr_switch_enable_mode(int next_state)
 
 	if (next_state == SECURE) {
 		for(i = 1; i <= plic->num_src; i++) {
-			if (plic_is_sec_interrupt(i)) {
-				/* config secure interrupt to S-Mode */
-				plic_intr_set_enable_mode(i, MODE_S);
-			} else {
-				/* config non-secure interrupt to M-Mode */
-				plic_intr_set_enable_mode(i, MODE_M);
+			if (plic_intr_enabled(i)) {
+				if (plic_is_sec_interrupt(i)) {
+					/* config secure interrupt to S-Mode */
+					plic_intr_set_enable_mode(i, MODE_S);
+				} else {
+					/* config non-secure interrupt to M-Mode */
+					plic_intr_set_enable_mode(i, MODE_M);
+				}
 			}
 		}
 	} else {
 		for(i = 1; i <= plic->num_src; i++) {
-			if (plic_is_sec_interrupt(i)) {
-				/* config secure interrupt to M-Mode */
-				plic_intr_set_enable_mode(i, MODE_M);
-			} else {
-				/* config non-secure interrupt to S-Mode */
-				plic_intr_set_enable_mode(i, MODE_S);
+			if (plic_intr_enabled(i)) {
+				if (plic_is_sec_interrupt(i)) {
+					/* config secure interrupt to M-Mode */
+					plic_intr_set_enable_mode(i, MODE_M);
+				} else {
+					/* config non-secure interrupt to S-Mode */
+					plic_intr_set_enable_mode(i, MODE_S);
+				}
 			}
 		}
 	}
