@@ -206,7 +206,7 @@ void pmp_init()
   }
 }
 
-int pmp_set_keystone(int region_idx, uint8_t perm)
+int pmp_set_permission(int region_idx, uint8_t perm)
 {
   if(!is_pmp_region_valid(region_idx))
     PMP_ERROR(PMP_REGION_INVALID, "Invalid PMP region index");

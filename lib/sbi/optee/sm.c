@@ -27,32 +27,32 @@ int mailbox_region_id = 0;
 
 int osm_pmp_set(uint8_t perm)
 {
-	return pmp_set_keystone(os_region_id, perm);
+	return pmp_set_permission(os_region_id, perm);
 }
 
 int teem_pmp_set(uint8_t perm)
 {
-	return pmp_set_keystone(tee_region_id, perm);
+	return pmp_set_permission(tee_region_id, perm);
 }
 
 int shm_pmp_set(uint8_t perm)
 {
-	return pmp_set_keystone(shm_region_id, perm);
+	return pmp_set_permission(shm_region_id, perm);
 }
 
 int plicm_pmp_set(uint8_t perm)
 {
-	return pmp_set_keystone(plicm_region_id, perm);
+	return pmp_set_permission(plicm_region_id, perm);
 }
 
 int timerm_pmp_set(uint8_t perm)
 {
-	return pmp_set_keystone(timer_region_id, perm);
+	return pmp_set_permission(timer_region_id, perm);
 }
 
 int mailboxm_pmp_set(uint8_t perm)
 {
-	return pmp_set_keystone(mailbox_region_id, perm);
+	return pmp_set_permission(mailbox_region_id, perm);
 }
 
 int smm_init()
@@ -238,9 +238,9 @@ void sm_init(bool cold_boot)
 
 	/* below are executed by all harts */
 	pmp_init();
-	pmp_set_keystone(sm_region_id, PMP_NO_PERM);
-	pmp_set_keystone(os_region_id, PMP_ALL_PERM);
-	pmp_set_keystone(tee_region_id, PMP_NO_PERM);
+	pmp_set_permission(sm_region_id, PMP_NO_PERM);
+	pmp_set_permission(os_region_id, PMP_ALL_PERM);
+	pmp_set_permission(tee_region_id, PMP_NO_PERM);
 
 	if (cold_boot) {
 		opteed_init();

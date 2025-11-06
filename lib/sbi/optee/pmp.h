@@ -102,7 +102,7 @@ void pmp_init();
 int pmp_region_init_atomic(uintptr_t start, uint64_t size, enum pmp_priority pri, region_id* rid, int allow_overlap);
 int pmp_region_init(uintptr_t start, uint64_t size, enum pmp_priority pri, region_id* rid, int allow_overlap);
 int pmp_region_free_atomic(region_id region);
-int pmp_set_keystone(region_id n, uint8_t perm);
+int pmp_set_permission(region_id n, uint8_t perm);
 int pmp_set_global(region_id n, uint8_t perm);
 int pmp_unset(region_id n);
 //int pmp_unset_global(region_id n);
