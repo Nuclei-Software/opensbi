@@ -13,7 +13,11 @@
 #include <sbi/sbi_ecall.h>
 #include <opteed_private.h>
 #include <sbi_utils/irqchip/plic.h>
+#include <sbi_utils/fdt/fdt_helper.h>
 
+extern void* irqchip_plic_get_pd(void);
+extern int fdt_node_offset_by_compatible(const void *fdt,
+			int startoffset, const char *compatible);
 extern struct sbi_ecall_extension ecall_optee;
 static int sm_init_done = 0;
 static int sm_region_id = 0, os_region_id = 0;
@@ -94,7 +98,6 @@ int shm_init()
 	return region;
 }
 
-extern void* irqchip_plic_get_pd(void);
 int plicm_init()
 {
 	int region = -1;
@@ -124,9 +127,25 @@ int timerm_init()
 int mailboxm_init()
 {
 	int region = -1;
-	int ret = pmp_region_init_atomic(OPTEE_MAILBOX_BASE, OPTEE_MAILBOX_SIZE,
+	int nodeoffset, rc;
+	uint64_t reg_addr, reg_size;
+	void *fdt = fdt_get_address();
+
+	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, "nuclei,nuclei-mbox");
+	if (nodeoffset < 0)
+		return -1;
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return -1;
+
+	if (reg_size & (reg_size -1)) {
+		sbi_printf("mailbox size is not ^2 aligned, please ensure aligned!\n");
+		return -1;
+	}
+	rc = pmp_region_init_atomic((uintptr_t)reg_addr, reg_size,
 					 PMP_PRI_ANY, &region, 0);
-	if (ret)
+	if (rc)
 		return -1;
 
 	return region;
@@ -145,35 +164,35 @@ void sm_init(bool cold_boot)
 		sm_region_id = smm_init();
 		if (sm_region_id < 0) {
 			sbi_printf(
-				"[SM] intolerable error - failed to initialize SM memory");
+				"[SM] failed to create secure monitor pmp entry.\n");
 			sbi_hart_hang();
 		}
 
 		os_region_id = osm_init();
 		if (os_region_id < 0) {
 			sbi_printf(
-				"[SM] intolerable error - failed to initialize OS memory");
+				"[SM] failed to create reeos pmp entry.\n");
 			sbi_hart_hang();
 		}
 
 		tee_region_id = teem_init();
 		if (tee_region_id < 0) {
 			sbi_printf(
-				"[SM] intolerable error - failed to initialize TEE memory");
+				"[SM] failed to create teeos pmp entry.\n");
 			sbi_hart_hang();
 		}
 
 		shm_region_id = shm_init();
 		if (shm_region_id < 0) {
 			sbi_printf(
-				"[SM] intolerable error - failed to initialize TEE SHARE memory");
+				"[SM] failed to create tee_share pmp entry.\n");
 			sbi_hart_hang();
 		}
 
 		plicm_region_id = plicm_init();
 		if (plicm_region_id < 0) {
 			sbi_printf(
-				"[SM] intolerable error - failed to initialize PLIC memory");
+				"[SM] failed to create plic pmp entry.\n");
 			sbi_hart_hang();
 		}
 
@@ -181,16 +200,16 @@ void sm_init(bool cold_boot)
 		timer_region_id = timerm_init();
 		if (timer_region_id < 0) {
 			sbi_printf(
-				"[SM] intolerable error - failed to initialize SEC Timer memory");
+				"[SM] failed to create test_timer pmp entry.\n");
 			sbi_hart_hang();
 		}
 #endif
+		/*
+		 * mailbox pmp is for communication between host and hsm
+		 * only used for nuclei hsm crypto engine.
+		 */
 		mailbox_region_id = mailboxm_init();
-		if (mailbox_region_id < 0) {
-			sbi_printf(
-				"[SM] intolerable error - failed to initialize Mailbox memory");
-			sbi_hart_hang();
-		}
+
 		/* enable optee use CCM cache function */
 		#define CCM_SUEN 0x7CE
 		#define S_WB_ALL_ENABLE  (1 << 25)
