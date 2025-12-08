@@ -35,16 +35,15 @@ static int nuclei_evalsoc_final_init(bool cold_boot,
 		csr_write(0x1a0, 0x1f);
 		csr_write(0x1b0, 0xffffffff);
 	}
+	// disable mattri0 which is used to configure PMA of CLM
+	csr_write(mattri0_base, 0x0);
 
 	/*
-	 * If arch is rv32 or rv64 without svpbmt feature, you can use mattri to set ddr base:0xfd000000,size:0x10000 as non-cachable region.
+	 * If arch is rv32 or rv64 without svpbmt feature, you can use mattri to set ddr base:0xfd000000,size:0x10000 as non-cachable region. which is used for XEC(NUCLEI ethernet mac IP)
 	 * xec dts node should contain desc_mem region from base:0xfd000000,size:0x10000; which is reserved region used to store xec descriptors.
 	 * if rv64 with svpbmt feature, xec dts node must not contain desc_mem property.
 	 */
 #if __riscv_xlen == 32
-	#define mattri1_base 0x7f5
-	#define mattri1_mask 0x7f6
-
 	csr_write(mattri1_mask, 0xffff0000);
 	csr_write(mattri1_base, 0xfd000005);
 #endif
