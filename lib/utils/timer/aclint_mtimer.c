@@ -17,6 +17,7 @@
 #include <sbi/sbi_timer.h>
 #include <sbi_utils/timer/aclint_mtimer.h>
 
+extern unsigned long clint_offset_quirk;
 static unsigned long mtimer_ptr_offset;
 
 #define mtimer_get_hart_data_ptr(__scratch)				\
@@ -236,7 +237,7 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 
 	/* Add MTIMER regions to the root domain */
 	if (mt->mtime_addr == (mt->mtimecmp_addr + mt->mtimecmp_size)) {
-		rc = sbi_domain_root_add_memrange(mt->mtimecmp_addr,
+		rc = sbi_domain_root_add_memrange(mt->mtimecmp_addr - clint_offset_quirk,
 					mt->mtime_size + mt->mtimecmp_size,
 					MTIMER_REGION_ALIGN,
 					(SBI_DOMAIN_MEMREGION_MMIO |

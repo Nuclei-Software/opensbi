@@ -17,6 +17,7 @@
 #include <sbi/sbi_timer.h>
 #include <sbi_utils/ipi/aclint_mswi.h>
 
+extern unsigned long clint_offset_quirk;
 static unsigned long mswi_ptr_offset;
 
 #define mswi_get_hart_data_ptr(__scratch)				\
@@ -115,7 +116,7 @@ int aclint_mswi_cold_init(struct aclint_mswi_data *mswi)
 	for (pos = 0; pos < mswi->size; pos += ACLINT_MSWI_ALIGN) {
 		region_size = ((mswi->size - pos) < ACLINT_MSWI_ALIGN) ?
 			      (mswi->size - pos) : ACLINT_MSWI_ALIGN;
-		sbi_domain_memregion_init(mswi->addr + pos, region_size,
+		sbi_domain_memregion_init(mswi->addr + pos - clint_offset_quirk, region_size,
 					  (SBI_DOMAIN_MEMREGION_MMIO |
 					   SBI_DOMAIN_MEMREGION_M_READABLE |
 					   SBI_DOMAIN_MEMREGION_M_WRITABLE),

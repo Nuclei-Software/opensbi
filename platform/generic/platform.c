@@ -33,6 +33,13 @@ extern unsigned long platform_override_modules_size;
 static const struct platform_override *generic_plat = NULL;
 static const struct fdt_match *generic_plat_match = NULL;
 
+/*
+ * The NUCLEI CLINT address is not aligned to 0x10000 boundary, which would require
+ * additional PMP entries to configure permissions for the CLINT region.
+ * here define clint_offset_quirk var to fixup this issue.
+ */
+unsigned long clint_offset_quirk = 0;
+
 static void fw_platform_lookup_special(void *fdt, int root_offset)
 {
 	const struct platform_override *plat;
