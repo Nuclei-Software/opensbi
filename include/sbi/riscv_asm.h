@@ -77,6 +77,14 @@
 #error "Unexpected __SIZEOF_SHORT__"
 #endif
 
+#define MHARTID_MASK 0x1
+/* define hartid mask bits */
+#ifndef MHARTID_MASK
+#error "MHARTID_MASK is not defined!"
+#else
+#define HARTID_MASK      MHARTID_MASK
+#endif
+
 /* clang-format on */
 
 #ifndef __ASSEMBLER__
@@ -162,8 +170,9 @@ void csr_write_num(int csr_num, unsigned long val);
 		__asm__ __volatile__("ebreak" ::: "memory"); \
 	} while (0)
 
+
 /* Get current HART id */
-#define current_hartid()	((unsigned int)csr_read(CSR_MHARTID))
+#define current_hartid()	((unsigned int)csr_read(CSR_MHARTID) & HARTID_MASK)
 
 /* determine CPU extension, return non-zero support */
 int misa_extension_imp(char ext);

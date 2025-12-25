@@ -17,6 +17,12 @@
 #define BOOT_STATUS_RELOCATE_DONE	1
 #define BOOT_STATUS_BOOT_HART_DONE	2
 
+.macro GET_MASKED_HARTID result_reg
+    # Read hartid into result register
+    csrr    \result_reg, mhartid
+    and     \result_reg, \result_reg, HARTID_MASK
+.endm
+
 .macro	MOV_3R __d0, __s0, __d1, __s1, __d2, __s2
 	add	\__d0, \__s0, zero
 	add	\__d1, \__s1, zero
@@ -456,7 +462,7 @@ _start_warm:
 	REG_L	s9, SBI_PLATFORM_HART_INDEX2ID_OFFSET(a4)
 
 	/* Find HART id */
-	csrr	s6, CSR_MHARTID
+	GET_MASKED_HARTID s6
 
 	/* Find HART index */
 	beqz	s9, 3f
