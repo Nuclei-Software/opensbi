@@ -23,12 +23,17 @@
 #define UART_REG_DIV		6
 #define UART_REG_SETUP	7
 
-#define UART_TXFIFO_FULL	0x80000000
-#define UART_RXFIFO_EMPTY	0x80000000
+#define UART_TXFIFO_FULL	(1U << 14)
+#define UART_RXFIFO_EMPTY	(1U << 15)
+
 #define UART_RXFIFO_DATA	0x000000ff
 #define UART_TXCTRL_TXEN	0x1
 #define UART_RXCTRL_RXEN	0x1
 #define UART_SETUP_8BNP		0x30
+
+#define CFG_STOP_BIT_MASK	(0x3 << 1)
+#define CFG_STOP_BIT_1BIT	(0x1 << 1)
+
 
 /* clang-format on */
 
@@ -70,7 +75,7 @@ static void set_reg(u32 num, u32 val)
 
 static void nuclei_uart_putc(char ch)
 {
-	while (get_reg(UART_REG_TXFIFO) & UART_TXFIFO_FULL)
+	while (get_reg(UART_REG_IP) & UART_TXFIFO_FULL)
 		;
 
 	set_reg(UART_REG_TXFIFO, ch);
@@ -78,12 +83,15 @@ static void nuclei_uart_putc(char ch)
 
 static int nuclei_uart_getc(void)
 {
-	u32 ret = get_reg(UART_REG_RXFIFO);
+	u32 ret;
 
-	if (!(ret & UART_RXFIFO_EMPTY))
-		return ret & UART_RXFIFO_DATA;
+	do {
+		ret = get_reg(UART_REG_IP);
+	} while (ret & UART_RXFIFO_EMPTY);
 
-	return -1;
+	ret = get_reg(UART_REG_RXFIFO);
+
+	return ret & UART_RXFIFO_DATA;
 }
 
 static struct sbi_console_device nuclei_console = {
@@ -94,6 +102,8 @@ static struct sbi_console_device nuclei_console = {
 
 int nuclei_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
+	unsigned int txctl_val = 0;
+
 	uart_base     = (volatile char *)base;
 	uart_in_freq  = in_freq;
 	uart_baudrate = baudrate;
@@ -105,8 +115,11 @@ int nuclei_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 	/* Disable interrupts */
 	set_reg(UART_REG_IE, 0);
 
-	/* Enable TX */
-	set_reg(UART_REG_TXCTRL, UART_TXCTRL_TXEN);
+	/* Enable TX , config 1bit stop bit*/
+	txctl_val = get_reg(UART_REG_TXCTRL);
+	txctl_val &= ~CFG_STOP_BIT_MASK;
+	txctl_val |= CFG_STOP_BIT_1BIT | UART_TXCTRL_TXEN;
+	set_reg(UART_REG_TXCTRL, txctl_val);
 
 	/* Enable Rx */
 	set_reg(UART_REG_RXCTRL, UART_RXCTRL_RXEN);
