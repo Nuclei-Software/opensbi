@@ -16,6 +16,9 @@
 #include <libfdt.h>
 
 extern unsigned long clint_offset_quirk;
+static uint32_t guest_index_bits = 0;
+static uint32_t hw_smsi_align_bits = 0;
+
 static const struct fdt_match nuclei_evalsoc_match[] = {
 	{ .compatible = "nuclei,evalsoc" },
 	{ .compatible = "nuclei,eval-soc" },
@@ -27,14 +30,14 @@ static int nuclei_evalsoc_get_geilen(void)
 {
 	int val;
 
+	if (!misa_extension('H'))
+		return 0;
 	csr_write(CSR_HGEIE, -1UL);
 	val = sbi_fls(csr_read(CSR_HGEIE));
 	csr_write(CSR_HGEIE, 0);
 
 	return val;
 }
-
-static uint32_t guest_index_bits, hw_smsi_align_bits;
 
 static void fdt_imsic_guest_index_fixup(void *fdt)
 {
@@ -53,7 +56,6 @@ static void fdt_imsic_guest_index_fixup(void *fdt)
 
 		prop = fdt_getprop(fdt, offset, "riscv,guest-index-bits", &len);
 		if (prop) {
-			sbi_printf("find guest-index-bit len:%d\n", len);
 			break;
 		}
 	}
@@ -81,7 +83,7 @@ static int nuclei_evalsoc_final_init(bool cold_boot,
 		 */
 		if (guest_index_bits != hw_smsi_align_bits) {
 			sbi_printf("Warning: dts prop riscv,guest-index-bits:%d "
-				"is not match with HW RTL GEILEN.\n",
+				"does not match with HW parameter GEILEN.\n",
 				guest_index_bits);
 			sbi_printf("Now update dts prop riscv,guest-index-bits "
 				"from %d to %d to adapt HW.\n", guest_index_bits, hw_smsi_align_bits);
